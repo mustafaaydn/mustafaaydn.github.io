@@ -1,0 +1,1343 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+	<title>Company - Faculty of Engineering Summer Training System</title>
+	<script src="../jquery/js/jquery-1.5.1.min.js" type="text/javascript" language="javascript"></script>
+	<script src="../jquery/js/jquery-ui-1.8.14.custom.min.js" type="text/javascript" language="javascript"></script>
+    <script src="../mfstaj.js" type="text/javascript" language="javascript"></script>
+    <link href="../main.css" rel="stylesheet" type="text/css" />
+    <link href="../jquery/css/cupertino/jquery-ui-1.8.14.custom.css" type="text/css" rel="stylesheet" />
+			<script>
+			$(function(){
+				$(".datePicker").datepicker({firstDay:1, dateFormat:'dd.mm.yy'});
+			});
+			$(document).ready(function(){
+					$('input#select').change(function(){
+						if(this.checked==''){this.parentNode.parentNode.style.backgroundColor = '';}
+						else{this.parentNode.parentNode.style.backgroundColor='#FBEE99';}
+					});
+				});
+
+			var placeHolder;
+			function searchPlaceHolder(node){
+				if(node.value==''){
+					node.value='Company Name';
+					placeHolder=true;
+				}
+				else if(node.value=='Company Name'){
+					placeHolder=false;
+					node.value=''
+				}
+				else
+					placeHolder=false;
+				placeHolderColor(node);
+			}
+			function searcPlaceHolderRemove(node){
+				if(placeHolder)
+					node.value='';
+				placeHolderColor(node);
+			}
+
+			function placeHolderColor(node){
+				if(placeHolder)
+					node.style.color = '#999';
+				else
+					node.style.color = '#000';
+			}
+
+			function beforeSearch(){
+				if(placeHolder)
+					$('input#searchQuery').val('');
+			}
+
+			var similarCompaniesPanel;
+			$(document).ready(function(){
+					if($('input#searchQuery').val()==''){
+						placeHolder=true;
+						$('input#searchQuery').val('Company Name');
+						placeHolderColor($('input#searchQuery').get(0));
+					}
+					similarCompaniesPanel = document.createElement('DIV');
+					similarCompaniesPanel.id = 'similarCompaniesPanel';
+					document.body.appendChild(similarCompaniesPanel);
+
+				});
+			function removeSelectedCompanies(){
+				response = confirm('Are you sure that you want to permanently remove the selected companies? All information regarding and all applications to these companies will be deleted. This cannot be undone.');
+				if(response!=true)
+					return;
+				
+				var companies = new Array();
+				try{
+					companies = $('input.Company');
+				}
+				catch(e){
+					temp = document.getElementsByTagName('input');
+					for(i=0;i<temp.length;i++)
+						if(temp.item(i).className=='Company')
+							companies.push();
+				}
+				var postString='';
+				form = document.createElement('FORM');
+				form.action = '?page=company';
+				form.method = 'post';
+				document.body.appendChild(form);
+				x=false;
+				for(i=0,j=0 ; i<companies.length ; i++)
+					if(companies[i].checked){
+						var input = document.createElement('INPUT');
+						input.type = 'hidden';
+						input.name = 'companies[' + j + ']';
+						input.value= escape(companies[i].value);
+						form.appendChild(input);
+						postString +=  (x?'&':'') + 'companies[' + j + '] = ' + escape(companies[i].value);
+						x=true;
+						j++;
+					}
+				//postString += '&formid=deleteCompanies';
+				var input = document.createElement('INPUT');
+				input.type = 'hidden';
+				input.name = 'formid';
+				input.value= 'deleteCompanies';
+				form.appendChild(input);
+				form.submit();
+				//window.location = '&'+postString;
+
+			}
+			
+			function quotaRequestSelectedCompanies(){
+				response = confirm('Do you want to generate qouta request letters for the selected companies?');
+				if(response!=true)
+					return;
+				var companies = new Array();
+				try{
+					companies = $('input.Company');
+				}
+				catch(e){
+					temp = document.getElementsByTagName('input');
+					for(i=0;i<temp.length;i++)
+						if(temp.item(i).className=='Company')
+							companies.push();
+				}
+				
+				var postString='';
+				form = document.createElement('FORM');
+				form.action = '?page=company';
+				form.method = 'post';
+				document.body.appendChild(form);
+				x=false;
+				for(i=0,j=0 ; i<companies.length ; i++)
+					if(companies[i].checked){
+						var input = document.createElement('INPUT');
+						input.type = 'hidden';
+						input.name = 'companies[' + j + ']';
+						input.value= escape(companies[i].value);
+						form.appendChild(input);
+						postString +=  (x?'&':'') + 'companies[' + j + '] = ' + escape(companies[i].value);
+						x=true;
+						j++;
+					}
+				//postString += '&formid=deleteCompanies';
+				var input = document.createElement('INPUT');
+				input.type = 'hidden';
+				input.name = 'formid';
+				input.value= 'quotaRequestMulti';
+				form.appendChild(input);
+				form.submit();
+				
+				//window.location = '&'+postString;
+
+			}
+			
+			function etiketBasSelectedCompanies(){
+				response = confirm('Do you want to generate address labels document for selected companies?');
+				if(response!=true)
+					return;
+				var companies = new Array();
+				try{
+					companies = $('input.Company');
+				}
+				catch(e){
+					temp = document.getElementsByTagName('input');
+					for(i=0;i<temp.length;i++)
+						if(temp.item(i).className=='Company')
+							companies.push();
+				}
+				var postString='';
+				form = document.createElement('FORM');
+				form.action = '?page=company';
+				form.method = 'post';
+				document.body.appendChild(form);
+				x=false;
+				for(i=0,j=0 ; i<companies.length ; i++)
+					if(companies[i].checked){
+						var input = document.createElement('INPUT');
+						input.type = 'hidden';
+						input.name = 'companies[' + j + ']';
+						input.value= escape(companies[i].value);
+						form.appendChild(input);
+						postString +=  (x?'&':'') + 'companies[' + j + '] = ' + escape(companies[i].value);
+						x=true;
+						j++;
+					}
+				//postString += '&formid=deleteCompanies';
+				var input = document.createElement('INPUT');
+				input.type = 'hidden';
+				input.name = 'formid';
+				input.value= 'addressLabels';
+				form.appendChild(input);
+				form.submit();		
+
+			}
+
+			function removeCompany(companyId,companyName){
+				response = confirm('Are you sure that you want to permanently remove the company " \"' + companyName + '\" "? All information regarding and all applications to this company will be deleted. This cannot be undone.');
+				if(response!=true)
+					return;
+				window.location = '?page=company&action=removeCompany&companyId='+companyId;
+			}
+
+			function checkCompanies(node){
+				if(node.value.length < 3){
+					similarCompaniesPanel.style.display = 'none';
+					return;
+				}
+				$.ajax({
+					type:'get',
+					data:{cmd:'get_similar_companies',company_name:node.value},
+					url:'../ajax/company.php',
+					dataType:'JSON',
+					success:function(companies){
+								if(companies!='-1'){
+
+									similarCompaniesPanel.style.top = ($(node).offset().top + 33)+'px';
+									similarCompaniesPanel.style.left = ( $(node).offset().left + $(node).width() - 370)+'px';
+									similarCompaniesPanel.innerHTML = '';
+									
+
+									for(i=0;i<companies.length;i++){
+										similarCompaniesPanel.innerHTML += '<div><a href="?page=company&content=detail&CompanyID='+companies[i].CompanyID+'">'+companies[i].Name+'</a></div>';
+
+									}
+									if(companies.length>0){
+										similarCompaniesPanel.style.display = 'block';
+									}
+									else
+										similarCompaniesPanel.style.display = 'none';
+								}
+							}
+				});
+			}		
+			
+			
+			var generateQuotaRequestForm = function (){
+				this.href = '../documents/writeDoc.php';
+				this.panel = document.createElement('DIV')
+				this.panel.className = 'documentDownloadPanel';
+				this.panel.id = 'generateQuotaRequestForm';
+				this.panel.style.textAlign = 'center';
+				this.panel.innerHTML = 	'<div style="text-align:center"><input checked="checked" type="radio" name="language" value="TR" id="TR" /><label for="TR">Turkish</label>&emsp;<input type="radio" name="language" value="EN" id="EN"/><label for="EN">English</label></div>'+
+								'<div style="text-align:center"><div style="margin:auto;margin-top:10px;width:50px;height:50px;border:2px solid #6CF;cursor:pointer;"><a href="#" onclick="downloadForm()"><img title="Download Report" style="width:46px;height:46px;border:2px solid #9FF;" border="0" src="../stajIcons/printQuota.png"/></a></div></div>';
+				$(document).ready(function(){
+						generateQuotaRequestForm.initialize();
+					});
+				this.downloadForm = function(){
+					window.location = this.href + ( $('input#TR',this.panel).get(0).checked==true ? '&language=TR' : '&language=EN');
+					$(this.panel).dialog('close');
+				}
+				this.initialize = function(){
+					document.body.appendChild(this.panel);
+					$(this.panel).dialog({
+							autoOpen:false,
+							title:'Generate Quota Request Form'
+						});
+					SetCustomTitle.Refresh();
+				}
+				this.openDialog = function(href){
+					this.href = href;
+					$(this.panel).dialog('open');
+				}
+				return this;
+			}();
+			
+			
+			
+			
+		</script>
+		</head>
+ 
+<body>
+	<div id="pageContent">
+		<div id="header">
+				<div id="topBar" >
+		<a href="http://mfstaj.bilkent.edu.tr"><img alt="" height="86"  width="86" src="../stajIcons/login_bilkent_logo.png" border="0"></a>
+		<span style="position: absolute; width: 800px; height: 54px; z-index: 1; left: 100px; top: 19px;" id="headerText">
+			<h2>
+				<a href="http://mfstaj.bilkent.edu.tr">
+				Summer Training Registration and Review System<br/>Bilkent University - Faculty of Engineering				</a>
+			</h2>
+		</span>
+		<div id="langbox" style="float: right;">
+			<a style="font-size: 11px; color: #405ba2;" href="?start=52&page=&action=setlang&lang=tr">Türkçe</a> | English		</div>
+								<div id="userType" style="text-align:right;position:relative;top:-20px;"> Visitor&emsp;&nbsp;</div>
+						</div>
+			</div>    
+		 	<div id="mainMenuDiv" >
+		<div style="float:left;">
+			<ul id="menu" >
+								<li><a href="?page=company">Companies</a></li>
+					<li><a href="?page=announcement">Announcements</a></li>
+							</ul>
+		</div>
+		<div  id="welcomeMessage">
+
+		<form name="input" method="post" action="../logout.php" style="float:left;">
+			<input type="hidden" name="formid" value="logout"/>
+			<input type="hidden" name="type" value="user_visitor"/>
+							<a href="..">Home</a>
+			
+		</form>
+		</div>
+	</div>
+	   		
+		<div id="mainContent">
+			
+<h2>Companies</h2>
+		<div id="contentContainer">
+			<div id="tableBar">
+				<div style="position: absolute; width: 300px; height: 32px;left: 0px;  right: 561px;" id="filterBar">
+					<form method="get" action="?">
+						<table><tbody>
+						<tr>
+							<td>
+								<select name="filter" style="width: 220px; margin:0px; padding:0px;" >
+									<option value="AllCompanies">All Companies</option>
+                                                                        <optgroup label="Available Departments">
+										                                            <option value="1" >CS</option>
+                                                                                    <option value="2" >IE</option>
+                                                                                    <option value="3" >EE</option>
+                                                                                    <option value="4" >ME</option>
+                                                                           	</optgroup>
+                                    <optgroup label="Cities">
+										                                            <option value=" Sydals" > Sydals</option>
+                                                                                    <option value="Aachen" >Aachen</option>
+                                                                                    <option value="Abu Dhabi" >Abu Dhabi</option>
+                                                                                    <option value="Abuja" >Abuja</option>
+                                                                                    <option value="Adana" >Adana</option>
+                                                                                    <option value="Adapazarı" >Adapazarı</option>
+                                                                                    <option value="Afyonkarahisar" >Afyonkarahisar</option>
+                                                                                    <option value="Aksaray" >Aksaray</option>
+                                                                                    <option value="Alabama" >Alabama</option>
+                                                                                    <option value="Amasya" >Amasya</option>
+                                                                                    <option value="Amsterdam" >Amsterdam</option>
+                                                                                    <option value="Amstermdam" >Amstermdam</option>
+                                                                                    <option value="Ankara" >Ankara</option>
+                                                                                    <option value="Antalya" >Antalya</option>
+                                                                                    <option value="Antwerp" >Antwerp</option>
+                                                                                    <option value="Atlanta, Georgia" >Atlanta, Georgia</option>
+                                                                                    <option value="Aubagne" >Aubagne</option>
+                                                                                    <option value="Augsburg" >Augsburg</option>
+                                                                                    <option value="Austin" >Austin</option>
+                                                                                    <option value="Aydın" >Aydın</option>
+                                                                                    <option value="Bad Laasphe" >Bad Laasphe</option>
+                                                                                    <option value="Baku" >Baku</option>
+                                                                                    <option value="Balıkesir" >Balıkesir</option>
+                                                                                    <option value="Barcelona" >Barcelona</option>
+                                                                                    <option value="Basel" >Basel</option>
+                                                                                    <option value="Batman" >Batman</option>
+                                                                                    <option value="Baton Rouge" >Baton Rouge</option>
+                                                                                    <option value="Beirut" >Beirut</option>
+                                                                                    <option value="Belgrade" >Belgrade</option>
+                                                                                    <option value="Berkshire" >Berkshire</option>
+                                                                                    <option value="BERLİN" >BERLİN</option>
+                                                                                    <option value="Bessines sur gartempe" >Bessines sur gartempe</option>
+                                                                                    <option value="Bethesda" >Bethesda</option>
+                                                                                    <option value="Beverly Hills" >Beverly Hills</option>
+                                                                                    <option value="Bielefeld" >Bielefeld</option>
+                                                                                    <option value="Bilecik" >Bilecik</option>
+                                                                                    <option value="Bishkek" >Bishkek</option>
+                                                                                    <option value="Bochum" >Bochum</option>
+                                                                                    <option value="Bolu" >Bolu</option>
+                                                                                    <option value="Bonn" >Bonn</option>
+                                                                                    <option value="Boston" >Boston</option>
+                                                                                    <option value="Boston, MA" >Boston, MA</option>
+                                                                                    <option value="Boulder" >Boulder</option>
+                                                                                    <option value="Böblingen" >Böblingen</option>
+                                                                                    <option value="Bremen" >Bremen</option>
+                                                                                    <option value="Brighton" >Brighton</option>
+                                                                                    <option value="Brisbane" >Brisbane</option>
+                                                                                    <option value="Bristol" >Bristol</option>
+                                                                                    <option value="British Columbia" >British Columbia</option>
+                                                                                    <option value="Bruchsal" >Bruchsal</option>
+                                                                                    <option value="Bruksel" >Bruksel</option>
+                                                                                    <option value="Brussels" >Brussels</option>
+                                                                                    <option value="Bucharest" >Bucharest</option>
+                                                                                    <option value="Budapest" >Budapest</option>
+                                                                                    <option value="Burdur" >Burdur</option>
+                                                                                    <option value="Burnaby" >Burnaby</option>
+                                                                                    <option value="Bursa" >Bursa</option>
+                                                                                    <option value="Buxtehude" >Buxtehude</option>
+                                                                                    <option value="Cairo" >Cairo</option>
+                                                                                    <option value="California" >California</option>
+                                                                                    <option value="CAMBRIDGE" >CAMBRIDGE</option>
+                                                                                    <option value="Cambridge" >Cambridge</option>
+                                                                                    <option value="Cape Town" >Cape Town</option>
+                                                                                    <option value="CHAKWAL" >CHAKWAL</option>
+                                                                                    <option value="Chicago" >Chicago</option>
+                                                                                    <option value="Cleveland" >Cleveland</option>
+                                                                                    <option value="Coimbatore" >Coimbatore</option>
+                                                                                    <option value="Coimbra" >Coimbra</option>
+                                                                                    <option value="College Park" >College Park</option>
+                                                                                    <option value="College Station" >College Station</option>
+                                                                                    <option value="Cologne" >Cologne</option>
+                                                                                    <option value="Colorado Springs" >Colorado Springs</option>
+                                                                                    <option value="Columbus" >Columbus</option>
+                                                                                    <option value="Connecticut " >Connecticut </option>
+                                                                                    <option value="Copenhagen" >Copenhagen</option>
+                                                                                    <option value="Coventry" >Coventry</option>
+                                                                                    <option value="CUPERTINO" >CUPERTINO</option>
+                                                                                    <option value="Çanakkale" >Çanakkale</option>
+                                                                                    <option value="Çankırı" >Çankırı</option>
+                                                                                    <option value="Çin" >Çin</option>
+                                                                                    <option value="Çorum" >Çorum</option>
+                                                                                    <option value="Daharki" >Daharki</option>
+                                                                                    <option value="Dambovita/ Târgovişte/Gaesti" >Dambovita/ Târgovişte/Gaesti</option>
+                                                                                    <option value="Darmstadt" >Darmstadt</option>
+                                                                                    <option value="Davis" >Davis</option>
+                                                                                    <option value="Denizli" >Denizli</option>
+                                                                                    <option value="Detroit" >Detroit</option>
+                                                                                    <option value="Dettingen an der Erms" >Dettingen an der Erms</option>
+                                                                                    <option value="Diekirch" >Diekirch</option>
+                                                                                    <option value="Diğer" >Diğer</option>
+                                                                                    <option value="Diyarbakır" >Diyarbakır</option>
+                                                                                    <option value="Doha" >Doha</option>
+                                                                                    <option value="Dornbirn" >Dornbirn</option>
+                                                                                    <option value="Dortmund" >Dortmund</option>
+                                                                                    <option value="Dresden" >Dresden</option>
+                                                                                    <option value="Dubai" >Dubai</option>
+                                                                                    <option value="Dubai Emirate" >Dubai Emirate</option>
+                                                                                    <option value="Dublin" >Dublin</option>
+                                                                                    <option value="Durham, NC" >Durham, NC</option>
+                                                                                    <option value="Düsseldorf" >Düsseldorf</option>
+                                                                                    <option value="Düzce" >Düzce</option>
+                                                                                    <option value="Eindhoven" >Eindhoven</option>
+                                                                                    <option value="Elazığ" >Elazığ</option>
+                                                                                    <option value="Ennepetal" >Ennepetal</option>
+                                                                                    <option value="Enschede" >Enschede</option>
+                                                                                    <option value="Erlangen" >Erlangen</option>
+                                                                                    <option value="Erseke" >Erseke</option>
+                                                                                    <option value="Erzincan" >Erzincan</option>
+                                                                                    <option value="Erzurum" >Erzurum</option>
+                                                                                    <option value="Eskişehir" >Eskişehir</option>
+                                                                                    <option value="Flagstaff" >Flagstaff</option>
+                                                                                    <option value="Flintshire" >Flintshire</option>
+                                                                                    <option value="Floransa" >Floransa</option>
+                                                                                    <option value="Florida" >Florida</option>
+                                                                                    <option value="Foster City, CA" >Foster City, CA</option>
+                                                                                    <option value="Frankfurt" >Frankfurt</option>
+                                                                                    <option value="Friedrichshafen" >Friedrichshafen</option>
+                                                                                    <option value="Galway" >Galway</option>
+                                                                                    <option value="Ganja" >Ganja</option>
+                                                                                    <option value="Gaziantep" >Gaziantep</option>
+                                                                                    <option value="Geneva" >Geneva</option>
+                                                                                    <option value="Ghent" >Ghent</option>
+                                                                                    <option value="Gifhorn" >Gifhorn</option>
+                                                                                    <option value="Giresun" >Giresun</option>
+                                                                                    <option value="Girne" >Girne</option>
+                                                                                    <option value="Gothenburg" >Gothenburg</option>
+                                                                                    <option value="Grenoble" >Grenoble</option>
+                                                                                    <option value="Guangzhou" >Guangzhou</option>
+                                                                                    <option value="Hamburg" >Hamburg</option>
+                                                                                    <option value="Hannover" >Hannover</option>
+                                                                                    <option value="Haripur" >Haripur</option>
+                                                                                    <option value="Hassanabdal" >Hassanabdal</option>
+                                                                                    <option value="Hatay" >Hatay</option>
+                                                                                    <option value="Hattar" >Hattar</option>
+                                                                                    <option value="Heidelberg" >Heidelberg</option>
+                                                                                    <option value="Heinsberg" >Heinsberg</option>
+                                                                                    <option value="Heist-op-den-Berg" >Heist-op-den-Berg</option>
+                                                                                    <option value="Helsinki" >Helsinki</option>
+                                                                                    <option value="Hong Kong" >Hong Kong</option>
+                                                                                    <option value="Hoofddorp" >Hoofddorp</option>
+                                                                                    <option value="Hwaseong" >Hwaseong</option>
+                                                                                    <option value="Hyderabad" >Hyderabad</option>
+                                                                                    <option value="Iğdır" >Iğdır</option>
+                                                                                    <option value="Irbid" >Irbid</option>
+                                                                                    <option value="Irvine" >Irvine</option>
+                                                                                    <option value="Islamabad" >Islamabad</option>
+                                                                                    <option value="Isparta" >Isparta</option>
+                                                                                    <option value="İstanbul" >İstanbul</option>
+                                                                                    <option value="İzmir" >İzmir</option>
+                                                                                    <option value="Jeddah" >Jeddah</option>
+                                                                                    <option value="Joensuu" >Joensuu</option>
+                                                                                    <option value="Jsnnsn" >Jsnnsn</option>
+                                                                                    <option value="Kahramanmaraş" >Kahramanmaraş</option>
+                                                                                    <option value="Kallar Kahar" >Kallar Kahar</option>
+                                                                                    <option value="Kamra" >Kamra</option>
+                                                                                    <option value="Karabük" >Karabük</option>
+                                                                                    <option value="Karachi" >Karachi</option>
+                                                                                    <option value="Karlsruhe" >Karlsruhe</option>
+                                                                                    <option value="Kastamonu" >Kastamonu</option>
+                                                                                    <option value="Kayseri" >Kayseri</option>
+                                                                                    <option value="Khanewal" >Khanewal</option>
+                                                                                    <option value="KIEL" >KIEL</option>
+                                                                                    <option value="Kırıkkale" >Kırıkkale</option>
+                                                                                    <option value="Kırklareli" >Kırklareli</option>
+                                                                                    <option value="Kırşehir" >Kırşehir</option>
+                                                                                    <option value="KITCHENER  ONTARIO" >KITCHENER  ONTARIO</option>
+                                                                                    <option value="Kocaeli" >Kocaeli</option>
+                                                                                    <option value="Konstanz" >Konstanz</option>
+                                                                                    <option value="Konya" >Konya</option>
+                                                                                    <option value="KORE" >KORE</option>
+                                                                                    <option value="Kuala Lumpur" >Kuala Lumpur</option>
+                                                                                    <option value="Kuwait" >Kuwait</option>
+                                                                                    <option value="Kuwait City" >Kuwait City</option>
+                                                                                    <option value="Kütahya" >Kütahya</option>
+                                                                                    <option value="Lahore" >Lahore</option>
+                                                                                    <option value="LAUSANNE" >LAUSANNE</option>
+                                                                                    <option value="Leibzig" >Leibzig</option>
+                                                                                    <option value="Leicester" >Leicester</option>
+                                                                                    <option value="Leuven" >Leuven</option>
+                                                                                    <option value="Lincoln" >Lincoln</option>
+                                                                                    <option value="Lizbon" >Lizbon</option>
+                                                                                    <option value="Ljubljana" >Ljubljana</option>
+                                                                                    <option value="Lleida" >Lleida</option>
+                                                                                    <option value="Lohr am Main" >Lohr am Main</option>
+                                                                                    <option value="Lonato Del Garda (BS)" >Lonato Del Garda (BS)</option>
+                                                                                    <option value="London" >London</option>
+                                                                                    <option value="Long Beach" >Long Beach</option>
+                                                                                    <option value="Los Angeles" >Los Angeles</option>
+                                                                                    <option value="Ludwigshafen" >Ludwigshafen</option>
+                                                                                    <option value="Lübeck" >Lübeck</option>
+                                                                                    <option value="Maastricht" >Maastricht</option>
+                                                                                    <option value="Maching" >Maching</option>
+                                                                                    <option value="Madrid" >Madrid</option>
+                                                                                    <option value="Malacky" >Malacky</option>
+                                                                                    <option value="Malaga" >Malaga</option>
+                                                                                    <option value="Malatya" >Malatya</option>
+                                                                                    <option value="Male" >Male</option>
+                                                                                    <option value="Male'" >Male'</option>
+                                                                                    <option value="Manama" >Manama</option>
+                                                                                    <option value="Manchester, Burnley" >Manchester, Burnley</option>
+                                                                                    <option value="Manisa" >Manisa</option>
+                                                                                    <option value="Markdorf" >Markdorf</option>
+                                                                                    <option value="Melbourne" >Melbourne</option>
+                                                                                    <option value="Mersin" >Mersin</option>
+                                                                                    <option value="Miami" >Miami</option>
+                                                                                    <option value="Michigan-East Lansing" >Michigan-East Lansing</option>
+                                                                                    <option value="Milan" >Milan</option>
+                                                                                    <option value="milano" >milano</option>
+                                                                                    <option value="Milwaukee" >Milwaukee</option>
+                                                                                    <option value="Mirpur Mathelo" >Mirpur Mathelo</option>
+                                                                                    <option value="Mississauga" >Mississauga</option>
+                                                                                    <option value="Mississippi" >Mississippi</option>
+                                                                                    <option value="Mombasa" >Mombasa</option>
+                                                                                    <option value="Montréal" >Montréal</option>
+                                                                                    <option value="Moscow" >Moscow</option>
+                                                                                    <option value="Moskova" >Moskova</option>
+                                                                                    <option value="Muğla" >Muğla</option>
+                                                                                    <option value="Multan" >Multan</option>
+                                                                                    <option value="Munchen" >Munchen</option>
+                                                                                    <option value="Munich" >Munich</option>
+                                                                                    <option value="Münih" >Münih</option>
+                                                                                    <option value="Nalchik" >Nalchik</option>
+                                                                                    <option value="Nashville" >Nashville</option>
+                                                                                    <option value="Neftchala" >Neftchala</option>
+                                                                                    <option value="Nevşehir" >Nevşehir</option>
+                                                                                    <option value="New York" >New York</option>
+                                                                                    <option value="Nicosia - Lefkoşa" >Nicosia - Lefkoşa</option>
+                                                                                    <option value="Niğde" >Niğde</option>
+                                                                                    <option value="Nijmegen" >Nijmegen</option>
+                                                                                    <option value="Nordhausen" >Nordhausen</option>
+                                                                                    <option value="Norman" >Norman</option>
+                                                                                    <option value="North Carolina" >North Carolina</option>
+                                                                                    <option value="Norwalk" >Norwalk</option>
+                                                                                    <option value="NUREMBERG" >NUREMBERG</option>
+                                                                                    <option value="Nürnberg" >Nürnberg</option>
+                                                                                    <option value="NY" >NY</option>
+                                                                                    <option value="Ohio" >Ohio</option>
+                                                                                    <option value="Ordu" >Ordu</option>
+                                                                                    <option value="Orlando, Florida" >Orlando, Florida</option>
+                                                                                    <option value="Oslo" >Oslo</option>
+                                                                                    <option value="Osmaniye" >Osmaniye</option>
+                                                                                    <option value="Ottawa" >Ottawa</option>
+                                                                                    <option value="Oxford" >Oxford</option>
+                                                                                    <option value="Oxford, Mississipi, USA" >Oxford, Mississipi, USA</option>
+                                                                                    <option value="Paris" >Paris</option>
+                                                                                    <option value="Peja" >Peja</option>
+                                                                                    <option value="Pennsylvania" >Pennsylvania</option>
+                                                                                    <option value="Philadelphia" >Philadelphia</option>
+                                                                                    <option value="Pittsburgh" >Pittsburgh</option>
+                                                                                    <option value="Plano" >Plano</option>
+                                                                                    <option value="Portland" >Portland</option>
+                                                                                    <option value="Prague" >Prague</option>
+                                                                                    <option value="Ramallah" >Ramallah</option>
+                                                                                    <option value="Ravenna" >Ravenna</option>
+                                                                                    <option value="Rawalpindi" >Rawalpindi</option>
+                                                                                    <option value="Rendsburg" >Rendsburg</option>
+                                                                                    <option value="Reston,VA" >Reston,VA</option>
+                                                                                    <option value="Reutlingen" >Reutlingen</option>
+                                                                                    <option value="RICHMOND" >RICHMOND</option>
+                                                                                    <option value="Rijeka" >Rijeka</option>
+                                                                                    <option value="Riyadh" >Riyadh</option>
+                                                                                    <option value="Rize" >Rize</option>
+                                                                                    <option value="Roeselare" >Roeselare</option>
+                                                                                    <option value="Rome" >Rome</option>
+                                                                                    <option value="Rosemead" >Rosemead</option>
+                                                                                    <option value="Rüsselsheim" >Rüsselsheim</option>
+                                                                                    <option value="Sadiqabad" >Sadiqabad</option>
+                                                                                    <option value="Sahiwal" >Sahiwal</option>
+                                                                                    <option value="Sajawal" >Sajawal</option>
+                                                                                    <option value="Sakarya" >Sakarya</option>
+                                                                                    <option value="Salzgitter" >Salzgitter</option>
+                                                                                    <option value="Samsun" >Samsun</option>
+                                                                                    <option value="San Diego" >San Diego</option>
+                                                                                    <option value="San Francisco" >San Francisco</option>
+                                                                                    <option value="San Francisco, California" >San Francisco, California</option>
+                                                                                    <option value="San Jose" >San Jose</option>
+                                                                                    <option value="Santa Barbara" >Santa Barbara</option>
+                                                                                    <option value="Sarasota,Florida" >Sarasota,Florida</option>
+                                                                                    <option value="Sargodha" >Sargodha</option>
+                                                                                    <option value="Schifferstadt" >Schifferstadt</option>
+                                                                                    <option value="Seattle" >Seattle</option>
+                                                                                    <option value="Seelze" >Seelze</option>
+                                                                                    <option value="Seoul" >Seoul</option>
+                                                                                    <option value="Shanghai" >Shanghai</option>
+                                                                                    <option value="Sharjah" >Sharjah</option>
+                                                                                    <option value="Shelton, Connecticut " >Shelton, Connecticut </option>
+                                                                                    <option value="Shenzhen" >Shenzhen</option>
+                                                                                    <option value="Singapore" >Singapore</option>
+                                                                                    <option value="Singapur" >Singapur</option>
+                                                                                    <option value="Sinop" >Sinop</option>
+                                                                                    <option value="Sivas" >Sivas</option>
+                                                                                    <option value="Skopje" >Skopje</option>
+                                                                                    <option value="Slatina" >Slatina</option>
+                                                                                    <option value="Sofia" >Sofia</option>
+                                                                                    <option value="Southampton, PA" >Southampton, PA</option>
+                                                                                    <option value="Srinagar" >Srinagar</option>
+                                                                                    <option value="St Medard d'Excideuil" >St Medard d'Excideuil</option>
+                                                                                    <option value="St. Georgen" >St. Georgen</option>
+                                                                                    <option value="St. Julian's" >St. Julian's</option>
+                                                                                    <option value="Staré Město" >Staré Město</option>
+                                                                                    <option value="Steyr" >Steyr</option>
+                                                                                    <option value="Stockholm" >Stockholm</option>
+                                                                                    <option value="Stuttgard" >Stuttgard</option>
+                                                                                    <option value="Stuttgart" >Stuttgart</option>
+                                                                                    <option value="Sukkur" >Sukkur</option>
+                                                                                    <option value="Sumgayit" >Sumgayit</option>
+                                                                                    <option value="Sunnyvale" >Sunnyvale</option>
+                                                                                    <option value="Surrey" >Surrey</option>
+                                                                                    <option value="Sydney" >Sydney</option>
+                                                                                    <option value="Sylhet" >Sylhet</option>
+                                                                                    <option value="Şanlıurfa" >Şanlıurfa</option>
+                                                                                    <option value="Tampere" >Tampere</option>
+                                                                                    <option value="Tanger" >Tanger</option>
+                                                                                    <option value="Targovishte" >Targovishte</option>
+                                                                                    <option value="Tatabánya" >Tatabánya</option>
+                                                                                    <option value="Taxila" >Taxila</option>
+                                                                                    <option value="Tehran" >Tehran</option>
+                                                                                    <option value="Tekirdağ" >Tekirdağ</option>
+                                                                                    <option value="Tel Aviv" >Tel Aviv</option>
+                                                                                    <option value="Tempe" >Tempe</option>
+                                                                                    <option value="Tettnang" >Tettnang</option>
+                                                                                    <option value="Thuwal" >Thuwal</option>
+                                                                                    <option value="TIRANE" >TIRANE</option>
+                                                                                    <option value="Tiran" >Tiran</option>
+                                                                                    <option value="Tirana" >Tirana</option>
+                                                                                    <option value="Tirane" >Tirane</option>
+                                                                                    <option value="Tokat" >Tokat</option>
+                                                                                    <option value="Tokyo" >Tokyo</option>
+                                                                                    <option value="Torino" >Torino</option>
+                                                                                    <option value="Toronto" >Toronto</option>
+                                                                                    <option value="TOULOUSE" >TOULOUSE</option>
+                                                                                    <option value="Trabzon" >Trabzon</option>
+                                                                                    <option value="Trebnje" >Trebnje</option>
+                                                                                    <option value="Trieste" >Trieste</option>
+                                                                                    <option value="Trondheim" >Trondheim</option>
+                                                                                    <option value="Turgi" >Turgi</option>
+                                                                                    <option value="Turgovishte" >Turgovishte</option>
+                                                                                    <option value="Ulaanbaatar" >Ulaanbaatar</option>
+                                                                                    <option value="Uşak" >Uşak</option>
+                                                                                    <option value="Van" >Van</option>
+                                                                                    <option value="Vancouver" >Vancouver</option>
+                                                                                    <option value="Varese" >Varese</option>
+                                                                                    <option value="Victoria" >Victoria</option>
+                                                                                    <option value="Vienna" >Vienna</option>
+                                                                                    <option value="Viyana" >Viyana</option>
+                                                                                    <option value="Wah Cantt" >Wah Cantt</option>
+                                                                                    <option value="Waibstadt" >Waibstadt</option>
+                                                                                    <option value="Walldorf" >Walldorf</option>
+                                                                                    <option value="Walluf" >Walluf</option>
+                                                                                    <option value="Washington" >Washington</option>
+                                                                                    <option value="Washington D.C." >Washington D.C.</option>
+                                                                                    <option value="Washington DC" >Washington DC</option>
+                                                                                    <option value="Waterloo" >Waterloo</option>
+                                                                                    <option value="West Bromwich" >West Bromwich</option>
+                                                                                    <option value="Wetzlar" >Wetzlar</option>
+                                                                                    <option value="Winnenden " >Winnenden </option>
+                                                                                    <option value="Yalova" >Yalova</option>
+                                                                                    <option value="Zagreb" >Zagreb</option>
+                                                                                    <option value="ZARAUTZ" >ZARAUTZ</option>
+                                                                                    <option value="Zeewolde - Flevoland" >Zeewolde - Flevoland</option>
+                                                                                    <option value="Zilina" >Zilina</option>
+                                                                                    <option value="Zonguldak" >Zonguldak</option>
+                                                                                    <option value="Zurich" >Zurich</option>
+                                                                                    <option value="Zürich" >Zürich</option>
+                                                                                    <option value="Zürih" >Zürih</option>
+                                                                           	</optgroup>                             
+
+								</select>
+							</td>
+							<td>
+                            	<input type="hidden" name="page" value="company"  />
+								<button type="submit"  style="width: 62px">Filter</button>
+							</td>
+						</tr>
+						</tbody></table>
+					</form>
+				</div>
+
+				<div style="position: absolute; height: 34px; width: 407px;  left: 310px;" id="searchBar">
+					<form method="get" action="?page=company" onSubmit="return beforeSearch();">
+						<table><tbody>
+							<tr>
+								<td> 
+									<input id="searchQuery" name="searchQuery" type="text" size="55" value="" style="width: 454px" onBlur="searchPlaceHolder(this)" onFocus="searchPlaceHolder(this)" />
+								</td> 
+								<td>
+                            		<input type="hidden" name="page" value="company"  />
+									<input name="Search" type="submit" value="Search" />
+								</td> 
+							</tr>
+						</tbody></table>	
+					</form>
+				</div>
+				
+								
+			</div>
+		 				<table style="position:relative; width: 1000px; left:-1px;font-size:1.05em;" cellpadding="3" cellspacing="2px" id="companies">
+								<tr>
+					<td colspan="11" style="font-size:0.9em;">
+						<span style="margin-left:30px; float:right; margin-top:5px;">
+						Page:&nbsp;<a href="?page=company&start=0&filter=">(First)</a>&nbsp;&nbsp;<a href="?page=company&start=51&filter=">(Previous)</a>&nbsp;&nbsp;<span style="font-size:1.2em;">53 / 95</span>&nbsp;&nbsp;<a href="?page=company&start=53&filter=">(Next)</a>&nbsp;&nbsp;<a href="?page=company&start=94&filter=">(Last)</a>						</span>
+					</td>
+				</tr>
+				<tr class="">
+										
+					
+					<th>Company Name</th>
+					
+										
+					<th style="width: 110px" align="center">City</th>
+					
+					
+													
+					<th style="width: 120px" >Applicable Depts.</th>
+					<th style="width: 120px" >Sector</th>
+							
+					
+				</tr>
+							<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4977"> Linovi</a> </td>
+					
+										
+					<td align="center">İzmir</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center">Software</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4829"> Litera Bilişim</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center">Bilişim endüstrisi</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5326"> Litum Bilgi Teknolojileri Sanayi ve Dış Ticaret A.Ş.</a> </td>
+					
+										
+					<td align="center">İzmir</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1752"> LNL ELEKTRİK ELEKTRONİK BİLİŞİM VE DAN.LTD.ŞTİ.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5780"> LNL ELEKTRİK ELEKTRONİK BİLİŞİM VE DAN.LTD.ŞTİ.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Wireless communication, Sensors and Automation systems</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4604"> LOESCHE GmbH</a> </td>
+					
+										
+					<td align="center">Düsseldorf</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3787"> Logo business solutions</a> </td>
+					
+										
+					<td align="center">Kocaeli</td>
+					
+
+					
+					<td align="center">CS IE</td>
+										<td align="center">Yazılım</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4441"> Logo Yazılım</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center">Yazılım</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1753"> LOGOMOTİF MULTİMEDYA VE ELEKTRONİK YAYINCILIK SAN.</a> </td>
+					
+										
+					<td align="center">Kocaeli</td>
+					
+
+					
+					<td align="center">CS EE</td>
+										<td align="center">BİLİŞİM</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5231"> Logon Yönetim Danışmalığı ve Bilgi Teknolojileri</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6493"> LOTEC</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Electrical and Electronics Engineering</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1754"> LOVAT INC.</a> </td>
+					
+										
+					<td align="center">Toronto</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=2750"> Lovegrove Studio</a> </td>
+					
+										
+					<td align="center">London</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center">Industrial Design</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1755"> LOW PROFILE İSTANBUL TEKSTİL  SAN. VE DIŞ TİC. A.Ş</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">TEKSTİL İMALAT VE İHRACAT</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4589"> Löher Asansörleri</a> </td>
+					
+										
+					<td align="center">İzmir</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Electronics and Mechanics</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=2453"> LST Yazılım Elektronik ve İletişim Teknolojileri Ticaret Limited Şti.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center">Yazılım</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5657"> LuckyEye</a> </td>
+					
+										
+					<td align="center">İstanbul</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center">Digital Marketing</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4935"> Lumos Laser</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Optics, embedded systems</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4946"> Lumos Laser</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Industrial lasers, EE</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5428"> Lumos Laser</a> </td>
+					
+										
+					<td align="center">İstanbul</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Laser, Optics, Electrooptic Systems, Embedded Systems</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3627"> M.A.Y. Fren Sistemleri San. ve Tic. Ltd. Şti.</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1756"> M&L BİLGİSAYAR LTD.ŞTİ.</a> </td>
+					
+										
+					<td align="center">İstanbul</td>
+					
+
+					
+					<td align="center">CS EE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6513"> Macca Group Sugar Mills</a> </td>
+					
+										
+					<td align="center">Lahore</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Electrical and Electronics Engineering</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6479"> Macit Boru</a> </td>
+					
+										
+					<td align="center">İzmir</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3371"> Maestro Yazılım ve Danışmanlık</a> </td>
+					
+										
+					<td align="center">İstanbul</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6253"> Magiçe Magnetik Teknolojiler</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Electromagnetics</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5502"> Magmaweld - Oerlikon Kaynak Elektrodları ve Sanayi A.Ş.</a> </td>
+					
+										
+					<td align="center">Manisa</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">EE</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3944"> Magna Otomotiv San. ve Tic. A.Ş.</a> </td>
+					
+										
+					<td align="center">Kocaeli</td>
+					
+
+					
+					<td align="center">IE ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5721"> Magneti Marelli MAKO Elektrik Sanayi ve Ticaret A.Ş.</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center">Automative</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5855"> MAHLE Motor Parçalari San. ve Tic. A.Ş.</a> </td>
+					
+										
+					<td align="center">İzmir</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center">automotive-auto components</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5126"> MAİS Motorlu Araçlar İmal ve Satış A.Ş.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5256"> MAİS Motorlu Araçlar İmal ve Satış A.Ş.</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4859"> Maison Consulting & Solutions</a> </td>
+					
+										
+					<td align="center">Karachi</td>
+					
+
+					
+					<td align="center">CS</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6298"> MAKELSAN PROJE İMALAT TAAHHÜT DANIŞMANLIK VE MÜŞAVİRLİK HİZMETLERİ MAKİNE MONTAJ İŞLERİ</a> </td>
+					
+										
+					<td align="center">Mersin</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=2311"> MAKİM MAKİNA (ŞUBE) İMALAT SANAYİ VE TİC. LTD. ŞTİ.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3663"> Makim Makina Teknolojileri San. Tic. A.Ş</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center">Manufacturing </td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3811"> Makim Makina Teknolojileri Sanayi Tic. A.Ş</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Manufacturing</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=3212"> Makina Fabrikaları - Türkiye Şeker Fabrikaları A.Ş.</a> </td>
+					
+										
+					<td align="center">Tokat</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1759"> MAKO ELEKTRİK SAN.VE TİC.A.Ş.</a> </td>
+					
+										
+					<td align="center">Bursa</td>
+					
+
+					
+					<td align="center">EE ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4297"> Makro Market A.Ş.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=1760"> MAKROKOD BİLŞİM YAZILIM DAN.TİC.LTD.ŞTİ.</a> </td>
+					
+										
+					<td align="center">Ankara</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6272"> Makromet Metalurji Makina Otomotiv San. Tic. A.Ş. </a> </td>
+					
+										
+					<td align="center">Konya</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center">Automotive</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=6160"> Malatya Maksan A.Ş</a> </td>
+					
+										
+					<td align="center">Malatya</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">Elektrik </td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5101"> Malatya Sentetik Çuval Dökme Gıda San. Tic. Ltd. Şti.</a> </td>
+					
+										
+					<td align="center">Malatya</td>
+					
+
+					
+					<td align="center">IE</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=4109"> Maldives, Sewerage and water companies</a> </td>
+					
+										
+					<td align="center">Male</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center">Fluid and machinery.</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5625"> Male' Water & Sewerage Company Pvt. Ltd.</a> </td>
+					
+										
+					<td align="center">Male'</td>
+					
+
+					
+					<td align="center">EE</td>
+										<td align="center">fluid, sewerage and electricity</td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5079"> MAN Truck & Bus AG</a> </td>
+					
+										
+					<td align="center">Munich</td>
+					
+
+					
+					<td align="center">ME</td>
+										<td align="center"></td>
+									</tr>
+								<tr class="company" >
+															
+					<td class="companyName"><a href="?page=company&content=detail&CompanyID=5403"> MAN Truck & Bus AG</a> </td>
+					
+										
+					<td align="center">Steyr</td>
+					
+
+					
+					<td align="center">IE ME</td>
+										<td align="center"></td>
+									</tr>
+								
+				<tr>
+					<td colspan="11" style="font-size:0.9em;">
+						<span style="margin-left:30px; float:right; margin-top:5px;">
+						Page:&nbsp;<a href="?page=company&start=0&filter=">(First)</a>&nbsp;&nbsp;<a href="?page=company&start=51&filter=">(Previous)</a>&nbsp;&nbsp;<span style="font-size:1.2em;">53 / 95</span>&nbsp;&nbsp;<a href="?page=company&start=53&filter=">(Next)</a>&nbsp;&nbsp;<a href="?page=company&start=94&filter=">(Last)</a>						</span>
+					</td>
+				</tr>
+                			</table>
+           
+           		</div><!-- Content Container-->
+		</div>
+		<div id="footer">
+				<div style="position: relative; width: 1000px; height: 50px; top: 20px;" id="footer">
+		<hr style="width:900px;">
+		<div style="color: #808080; width:700px; padding-left:150px;" id="footerText">
+			<div style="float:right;">&copy; Nauva</div>
+			<div>Bilkent University - Faculty of Engineering</div>
+            <div>Summer Training Registration and Review System,  Version 1.0.2</div>
+
+		</div>
+	</div>
+			</div>
+	</div><!-- Page Content -->
+</body> 
+</html> 
+
