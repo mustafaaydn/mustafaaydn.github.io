@@ -1,0 +1,389 @@
+
+				// if(paddle.name == "bottom") {
+				// 	//Direkt olarak çarpmak
+				// 	if(radial.x >= paddle.x &&
+				// 		radial.x <= paddle.x + paddle.w &&
+				// 		radial.y >= paddle.y) {
+				// 		// console.log("BOTTOM: hit paddle!")
+				// 		const angle = map(radial.x, paddle.x, paddle.x + paddle.w, 225, 315);
+				// 		this.vel = p5.Vector.fromAngle(radians(angle));
+				// 		this.vel.setMag(this.speed);
+				// 		// this.vel.y *= -1;
+				// 	}
+				// 	//Yan ağlara giden top
+				// 	else if(radial.y < height - paddle.gap && radial.y > paddle.y) {
+				// 		if((abs(radial.x - paddle.x) < this.r && vel.x > 0 && vel.y > 0) ||
+				// 			(abs(radial.x - (paddle.x + paddle.w)) < this.r && vel.x < 0 && vel.y > 0)) {
+				// 			this.vel.mult(-1);
+				// 			console.log("BOTTOM: yandan çarptı!!:");
+				// 			// console.log("\ttopun dokunduğu nokta:   ", radial.x, ", ", radial.y);
+				// 			// console.log("\tpaddle position noktası: ", paddle.x, ", ", paddle.y);
+				// 			// console.log("\t\t ", "pos, vel: ", "(", this.pos.x, ", ", this.pos.y, ") ", " (", vel.x, ", ", vel.y, ")")
+				// 		}
+				// 	}
+				// }
+				// else if(paddle.name == "top") {
+				// 	if(radial.x >= paddle.x &&
+				// 		radial.x <= paddle.x + paddle.w &&
+				// 		radial.y <= paddle.y + paddle.h) {
+				//
+				//    	const angle = map(radial.x, paddle.x, paddle.x + paddle.w, 135, 45);
+				// 		this.vel = p5.Vector.fromAngle(radians(angle));
+				// 		this.vel.setMag(this.speed);
+				// 		// console.log("tTOP: hit paddle!")
+				// 		// this.vel.y *= -1;
+				// 	}
+				// 	else if(radial.y < paddle.y + paddle.h && radial.y > paddle.y) {
+				// 		if((abs(radial.x - paddle.x) < this.r && vel.x > 0 && vel.y < 0) ||
+				// 			(abs(radial.x - (paddle.x + paddle.w)) < this.r && vel.x < 0 && vel.y < 0)) {
+				// 			this.vel.mult(-1);
+				// 			console.log("Ttop: yandan çarptı!!");
+				// 		}
+				// 	}
+				// }
+			}
+		}
+		// else {  //hits brickets
+		//    for(let bricket of other) {
+		//       if(radial.x >= bricket.x &&
+		//          radial.x <= bricket.x + bricket.w &&
+		//          radial.y >= bricket.y &&
+		//          radial.y <= bricket.y + bricket.h) {
+		//          //console.log("hitting:", bricket.i, bricket.j);
+		//          bricket.hit = true;
+		//          this.vel.mult(-1);
+		//       }
+		//    }
+		// }
+
+
+sketch version 3.5.19 / 18.45 --
+		let paddle1; //Top
+		let paddle2; //Bottom
+		let paddles;
+		let ball;
+		let slider;
+
+		function setup() {
+			createCanvas(800, 600)
+			//Two paddles: player 1 is on the top, player2 is on the bottom
+			paddle1 = new Paddle("top");
+			paddle2 = new Paddle("bottom");
+			//Belki kullanılır diye:
+			paddles = [paddle1, paddle2];
+			//The Ball!
+			ball = new Ball();
+			//Topun hızına interaktif ayar
+			slider = createSlider(1, 20, 4);
+		}
+
+		function thinkAndMove(paddle) {
+			if(paddle.name == "top") {
+				const inputs = [ball.pos.x, ball.pos.y, ball.vel.x, ball.vel.y, paddle.x, paddle.xchange];
+				const outputs = paddle.brain.predict(inputs);
+				//move left
+				if(outputs[0] > outputs[1]) {
+					paddle.move(-10);
+				}
+				else {
+					paddle.move(10);
+				}
+			}
+		}
+
+		function draw() {
+			background(241)
+			paddles.forEach(p => {
+				p.show(), p.update();
+			});
+
+			//Movement of paddle1: it thinks!
+			thinkAndMove(paddle1);
+
+			//Of paddle2: user-controlled via keyboard
+			handlePaddleMovement(paddle2);
+
+			ball.update();
+			ball.show();
+
+			ball.hits(paddles);
+			ball.edges();
+		}
+
+		function handlePaddleMovement(paddle) {
+			if(paddle.name == "bottom") {
+				//"a" for left
+				if(keyIsDown(65)) {
+					paddle2.move(-10);
+				}
+				//"d" for right
+				if(keyIsDown(68)) {
+					paddle2.move(10);
+				}
+			}
+		}
+
+		function keyReleased() {
+			paddle2.move(0);
+			// paddles.forEach(p => p.move(0));
+		}
+
+paddle.js 3.4.19 / 18.45 --
+		class Paddle {
+			//Expects the location as string: "top" or "bottom"
+			constructor(location) {
+				this.w = width / 10;
+				this.h = 11;
+				this.gap = 5;
+				this.x = randomGaussian() + width / 2;
+
+				this.xchange = 0;
+
+				if(/top|up/i.test(location)) {
+					this.y = this.gap;
+					this.name = "top";
+					//Top one has a brain!
+					this.brain = new Brain();
+				}
+				else if(/bottom|down/i.test(location)) {
+					this.y = height - this.gap - this.h;
+					this.name = "bottom";
+				}
+			}
+
+
+			update() {
+				this.x += this.xchange;
+			}
+
+			move(steps) {
+				this.xchange = steps;
+			}
+
+			show() {
+				fill(70, 83, 235);
+				noStroke();
+				this.x = constrain(this.x, 0, width - this.w)
+				rect(this.x, this.y, this.w, this.h);
+			}
+		}
+
+ball.js 3.5.19  / 18.46
+		class Ball {
+			constructor() {
+				this.r = width / 50;
+				this.speed = 3;
+				this.placeBall(this.speed);
+			}
+
+			placeBall(speed) {
+				this.pos = createVector(width / 2 + randomGaussian(), height / 2 + randomGaussian());
+				const angle = radians(random(30, 150) + ((random() > 0.5) ? 180 : 0));
+				this.vel = p5.Vector.fromAngle(angle);
+				this.vel.setMag(this.speed);
+			}
+
+			show() {
+				fill(170, 83, 35)
+				noStroke()
+				ellipse(this.pos.x, this.pos.y, this.r, this.r)
+			}
+
+			update() {
+				this.pos.add(this.vel);
+				ball.vel.setMag(slider.value());
+			}
+
+			hits(other) {
+				let pos = this.pos.copy();
+				let vel = this.vel.copy();
+				vel.setMag(this.r);
+				let radial = pos.add(vel);
+				if(other instanceof Array && other[0] instanceof Paddle) {
+					for(let paddle of other) {
+						// https://github.com/bmoren/p5.collide2D/blob/master/p5.collide2d.js
+						// temporapaddle.y variables to set edges for testing
+						let testX = this.pos.x;
+						let testY = this.pos.y;
+						// which edge is closest?
+						if(this.pos.x < paddle.x) {
+							testX = paddle.x // left edge
+						}
+						else if(this.pos.x > paddle.x + paddle.w) { // right edge
+							testX = paddle.x + paddle.w
+						}
+						if(this.pos.y < paddle.y) {
+							testY = paddle.y // top edge
+						}
+						else if(this.pos.y > paddle.y + paddle.h) {
+							testY = paddle.y + paddle.h // bottom edge
+						}
+
+						// get distance from closest edges
+						let distance = (this.pos.x - testX) * (this.pos.x - testX) + (this.pos.y - testY) * (this.pos.y - testY);
+
+						// if the distance is less than the radius, collision!
+						if(distance <= this.r * this.r) {
+							// console.log("HIT!");
+							let angle = map(this.pos.x, paddle.x, paddle.x + paddle.w, 225, 315);
+							if(paddle.name == "top")
+								angle *= -1;
+							this.vel = p5.Vector.fromAngle(radians(angle));
+							this.vel.setMag(this.speed);
+						}
+
+					}
+				}
+			}
+
+			edges() {
+				let pos = this.pos.copy();
+				let vel = this.vel.copy();
+				vel.setMag(this.r);
+				let radial = pos.add(vel);
+
+				//sağ taraf
+				if(radial.x >= width) {
+					this.vel.x *= -1;
+				}
+				//sol taraf
+				else if(radial.x <= 0) {
+					this.vel.x *= -1;
+				}
+
+				//game over!
+				//offset for aesthetic:
+				const off = this.r / 1.5;
+				if(radial.y >= height + off || radial.y <= 0 - off) {
+					push();
+					stroke("magenta");
+					strokeWeight(4);
+					line(40, height / 2, width - 40, height / 2);
+					//console.log("oyun bitti çaktırma")
+					pop();
+					this.placeBall(this.speed); //replace the ball
+				}
+			}
+		}
+
+
+
+Copy Constructor of Ball
+		if(other && other instanceof Ball) { //~copy constructor
+			this.r = other.r;
+			this.speed = other.speed;
+			this.pos = other.pos.copy();
+			this.vel = other.vel.copy();
+		}
+
+
+
+
+4519
+function nextGeneration() {
+	//Calculate & normalize fitness for all
+	normalizeFitness();
+	//Sort them by fitness (or score, doesn't matter here) in descending order
+	paddles.sort((a, b) => b.score - a.score);
+	paddles.forEach(p => console.log(p.fitness));
+	//Perform the selection
+	const mating_pool = performSelection();
+	//Reproduce the generation via crossover & mutation
+	let new_population = reproducePopulation(mating_pool);
+	console.log("Next generation!");
+	new_population.forEach(p => p.failed = false);
+	return new_population;
+}
+
+
+
+function reproducePopulation(mating_pool) {
+	let new_population = [];
+	for(let i = 0; i < POP_SIZE; i++) {
+		//Select two seemingly different parents from the mating pool
+		let parent_1, parent_2;
+		// do {
+		parent_1 = random(mating_pool);
+		parent_2 = random(mating_pool);
+		// } while(parent_1 !== parent_2);
+		let child;
+		//Perform crossover
+		let r = random();
+		if(r < CROSSOVER_RATE) {
+			child = new Paddle("top");
+			const weights_1 = parent_1.brain.model.getWeights();
+			const weights_2 = parent_2.brain.model.getWeights();
+			let child_weights = [];
+			for(let i = 0; i < weights_1.length / 2; i++) {
+				child_weights[i] = weights_1[i].clone();
+			}
+			for(let i = weights_1.length / 2; i < weights_2.length; i++) {
+				child_weights[i] = weights_2[i].clone();
+			}
+			child.brain.model.setWeights(child_weights);
+		}
+		else {
+			child = (parent_1.fitness > parent_2.fitness) ? new Paddle(parent_1) : new Paddle(parent_2);
+		}
+		//Perform mutation
+		tf.tidy(() => {
+			const weights = child.brain.model.getWeights();
+			const mutatedWeights = [];
+			for(let i = 0; i < weights.length; i++) {
+				let tensor = weights[i];
+				let shape = weights[i].shape;
+				let values = tensor.dataSync().slice();
+				for(let j = 0; j < values.length; j++) {
+					if(random() < MUTATION_RATE) {
+						values[j] += randomGaussian();
+					}
+				}
+				let newTensor = tf.tensor(values, shape);
+				mutatedWeights[i] = newTensor;
+			}
+			child.brain.model.setWeights(mutatedWeights);
+		});
+		new_population.push(child);
+	}
+	return new_population;
+}
+
+function performSelection() {
+	// //The best 2 and worst 1 goes directly
+	// new_paddles = [];
+	// new_paddles.push(paddles[0], paddles[1], paddles[POP_SIZE - 1]);
+	// //The rest is picked via rank selection
+	// const needed = POP_SIZE - new_paddles.length;
+	// for(let i = 0; i < needed; i++) {
+	let r = random();
+	let index = 0;
+	while(r > 0) {
+		r -= paddles[index].fitness;
+		index++;
+	}
+	return new Paddle(paddles[--index]);
+	// new_paddles.push(paddles[--index]);
+	// }
+	// //Mating pool is ready now
+	// return new_paddles;
+}
+
+
+// //Find the argMax for action
+// let action = 0; //represents "move left"
+// for(let i = 1; i < outputs.length; i++) {
+// 	if(outputs[i] > outputs[action]) {
+// 		action = i;
+// 	}
+// }
+// switch (action) {
+// 	case 0:
+// 		paddle.move(-movement); //To the Left!
+// 		break;
+// 	case 1:
+// 		paddle.move(0); //Stay where you are!
+// 		break;
+// 	case 2:
+// 		paddle.move(+movement); //To the Right!
+// 		break;
+// }
