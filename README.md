@@ -1,11 +1,11 @@
 ## Projects therein
 
-<a target="_blank" href="https://isaidwhynot.github.io/suanneredeezanokunuyor">Şu an Türkiye'de nerede ezan okunuyor?</a>
+<a href="https://isaidwhynot.github.io/suanneredeezanokunuyor" target="_blank">Şu an Türkiye'de nerede ezan okunuyor?</a>
 
-<a target="_blank" href="https://isaidwhynot.github.io/k-means">Yet Another K-Means Playground</a>
+<a href="https://isaidwhynot.github.io/k-means" target="_blank">Yet Another K-Means Playground</a>
 
-<a target="_blank" href="https://isaidwhynot.github.io/tenseball">TenseBall</a>
+<a href="https://isaidwhynot.github.io/tenseball" target="_blank">TenseBall</a>
 
-<a target="_blank" href="https://isaidwhynot.github.io/better-mfstaj">Better MFStaj</a>
+<a href="https://isaidwhynot.github.io/better-mfstaj" target="_blank">Better MFStaj</a>
 
-<a target="_blank" href="https://isaidwhynot.github.io/befunge93">Yet Another Befunge 93 Playground</a>
+<a href="https://isaidwhynot.github.io/befunge93" target="_blank">Yet Another Befunge 93 Playground</a>
