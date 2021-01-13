@@ -1,5 +1,3 @@
-## Merhaba!
-
 ### Some projects
 <hr>
 
