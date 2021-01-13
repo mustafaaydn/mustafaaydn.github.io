@@ -4,7 +4,7 @@
 
 <a href="https://mustafaaydn.github.io/k-means" target="_blank">Yet Another K-Means Playground</a>
 
-<a href="https://mustafaaydn.github.io/tenseball" target="_blank">TenseBall</a>
+<a href="https://mustafaaydn.github.io/tenseball" target="_blank">TenseBall</a>: MLP + Genetic Algorithm -> Plays ping-pong!
 
 <a href="https://mustafaaydn.github.io/better-mfstaj" target="_blank">Better MFStaj</a>
 
