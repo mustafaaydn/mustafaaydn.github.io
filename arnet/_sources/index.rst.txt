@@ -118,10 +118,10 @@ Let's perform a square-root transformation:
     model.fit(y)
     forecasts, intervals = model.predict(n_steps=20, return_intervals=True, alphas=[80, 95])
     ARNet.plot(lines=[y, model.fitted_values_, forecasts],
-                   labels=["y-train", "in-sample preds", "out-sample preds"],
-                   intervals=intervals,
-                   figure_kwargs={"xaxis_title": "Year", "yaxis_title": "# of spots",
-                                  "title": "Forecasts & intervals over sqrt(y)"})
+               labels=["y-train", "in-sample preds", "out-sample preds"],
+               intervals=intervals,
+               figure_kwargs={"xaxis_title": "Year", "yaxis_title": "# of spots",
+                              "title": "Forecasts & intervals over sqrt(y)"})
 
 which gives
 
