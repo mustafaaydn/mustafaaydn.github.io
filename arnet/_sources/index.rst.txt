@@ -32,13 +32,16 @@ Here are some example runs illustrating the flow:
 
 Fit, predict, plot
 ==================
+Let's perform forecasting on the `yearly sunspots <https://rdrr.io/r/datasets/sunspot.year.html>`_ dataset; we read it, fit & predict with the model and plot the results:
+
 .. code-block:: python
 
     import pandas as pd
     from arnet import ARNet
 
     # Read data
-    y = pd.read_csv("raw...", index_col="Year").squeeze()  # yearly sunspots
+    y = pd.read_csv("https://raw.githubusercontent.com/mustafaaydn/mustafaaydn.github.io/main/data/sunspots.csv",
+                    index_col="Year").squeeze()
 
     # Fit-predict
     model = ARNet()
