@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html data-content_root="./" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>arnet's API reference</title>
+<link href="_static/pygments.css?v=b76e3c8a" rel="stylesheet" type="text/css"/>
+<link href="_static/classic.css?v=ff85e404" rel="stylesheet" type="text/css"/>
+<script src="_static/documentation_options.js?v=01f34227"></script>
+<script src="_static/doctools.js?v=9a2dae69"></script>
+<script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+<script src="_static/sidebar.js"></script>
+<link href="genindex.html" rel="index" title="Index"/>
+<link href="search.html" rel="search" title="Search"/>
+<link href="_static/style_api.css" rel="stylesheet" type="text/css"/>
+</head><body>
+<div aria-label="related navigation" class="related" role="navigation"><p id="module-arnet">arnet.py: Generalized Python version of <a class="reference external" href="https://www.rdocumentation.org/packages/forecast/versions/8.23.0/topics/nnetar">nnetar.R</a></p></div>
+<div class="document">
+<div class="documentwrapper">
+<div class="bodywrapper">
+<div class="body" role="main">
+
+<dl class="py class">
+<dt class="sig sig-object py" id="arnet.ARNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arnet.</span></span><span class="sig-name descname"><span class="pre">ARNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seasonality</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arnet.ARNet" title="Link to this definition">¶</a></dt>
+<dd><p>Nonlinear autoregression with feed-forward neural networks (or any estimator really)</p>
+
+
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>base_model</strong><span class="classifier">Estimator, optional</span></dt><dd><p>The underlying model used for fitting and predicting. Defaults to a single layer <cite>MLPRegressor</cite>, where the
+number of hidden neurons are chosen automatically and also with <cite>max_iter</cite> being 2_000.  Any model respecting
+the sklearn’s estimator <a class="reference external" href="https://scikit-learn.org/stable/developers/develop.html">interface</a> is accepted.</p>
+</dd>
+<dt><strong>p</strong><span class="classifier">int or None, optional</span></dt><dd><p>Number of lags to look behind to predict the next instance. Leaving it None leads to automatic selection:
+“the optimal number of lags (according to the AIC) for a linear AR(p) model”, following nnetar.R.</p>
+</dd>
+<dt><strong>P</strong><span class="classifier">int or None, optional</span></dt><dd><p>Number of seasonal lags to look behind to predict the next instance. Ignored if <cite>seasonality</cite> is None.  If
+<cite>seasonality</cite> is not None and <cite>P</cite> is None, it is automatically selected: same procedure as for <cite>p</cite> except
+the data subject to selection is seasonally-adjusted with an STL decomposition, following nnetar.R.</p>
+</dd>
+<dt><strong>seasonality</strong><span class="classifier">int or None, optional</span></dt><dd><p>The periodicity suspected in the data, e.g., 12 for monthly series. <cite>None</cite> signals no seasonality. No
+automatic detection of seasonality is performed.</p>
+</dd>
+<dt><strong>repeats</strong><span class="classifier">int, default=20</span></dt><dd><p>Number of base models to fit internally. These are then averaged when making forecasts to smooth out the
+inherent randomness in the model’s nature, e.g., random network weights and stochastic learning
+algorithms for neural networks or bagging in random forests.</p>
+</dd>
+<dt><strong>scale_inputs</strong><span class="classifier">bool or Transformer, default=True</span></dt><dd><p>Whether (or how) to scale the input to the networks. The input refers to the side information variables (X),
+if any. If False, no scaling is performed; if True (default), <cite>sklearn.preprocessing.StandardScaler()</cite> is
+applied. You can also pass a scaler of your choice, e.g., <cite>MinMaxScaler()</cite>, as long as it “quacks” like an
+sklearn transformer.</p>
+</dd>
+<dt><strong>scale_output</strong><span class="classifier">bool or Transformer, default=True</span></dt><dd><p>Whether (or how) to scale the output variable, i.e., the target series (y). If False, no scaling is
+performed; if True (default), <cite>sklearn.preprocessing.StandardScaler()</cite> is applied. You can also pass a
+scaler of your choice, e.g., <cite>MinMaxScaler()</cite>, as long as it “quacks” like an sklearn transformer.</p>
+</dd>
+<dt><strong>transform_output</strong><span class="classifier">bool or Transformer, default=False</span></dt><dd><p>Whether (or how) to transform the output variable, i.e., the target series (y). If False, no transformation
+is performed; if True, <cite>sklearn.preprocessing.PowerTransformer(“box-cox”, standardize=False)</cite>, i.e., a
+BoxCox transformation where lambda is automatically chosen, is applied. You can also pass a transformer of
+your choice, e.g., <cite>FunctionTransformer(np.sqrt, inverse_func=np.square)</cite>, as long as it “quacks” like an
+sklearn transformer. Note that if <cite>scale_output</cite> is on, this transformation is performed before that.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The default MLPRegressor has two different default parameters than that of sklearn: <cite>hidden_layer_sizes</cite> and
+<cite>max_iter</cite>, where the former is <cite>None</cite> to signal it’s automatically determined (as in nnetar.R) and the latter
+is 2_000 as lower values tend to lead convergence issues on various datasets we tried. Of course, both can be
+changed on will, e.g., you can pass <cite>base_model=MLPRegressor()</cite> to have the sklearn’s defaults (100 and 200,
+respectively).</p>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tr class="row-odd"><td><p><a class="reference internal" href="#arnet.ARNet.fit" title="arnet.ARNet.fit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit</span></code></a>(y[, X])</p></td>
+<td><p>Train the model on <cite>y</cite> with possibly side information <cite>X</cite>.</p></td>
+</tr><tr class="row-odd"><td><p><a class="reference internal" href="#arnet.ARNet.predict" title="arnet.ARNet.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a>([X, n_steps, return_intervals, ...])</p></td>
+<td><p>Perform multi-step recursive forecasting and optionally also calculate prediction intervals.</p></td>
+</tr><tr class="row-even"><td><p><a class="reference internal" href="#arnet.ARNet.validate" title="arnet.ARNet.validate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate</span></code></a>(y, param_grid[, X, base_model_cls, ...])</p></td>
+<td><p>Perform time series cross validation with randomized (or full) grid search.</p></td>
+</tr><tr class="row-even"><td><p><a class="reference internal" href="#arnet.ARNet.plot" title="arnet.ARNet.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>(lines[, labels, true_indexes, ...])</p></td>
+<td><p>Plot <cite>lines</cite> with either a plotly or a matplotlib backend.</p></td>
+</tr>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="arnet.ARNet.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arnet.ARNet.fit" title="Link to this definition">¶</a></dt>
+<dd><p>Train the model on <cite>y</cite> with possibly side information <cite>X</cite>. Note that <cite>fit</cite> can be called either as fit(X, y) or
+fit(y, X?).</p>
+<p>If left unspecified, <cite>p</cite> and <cite>P</cite> are determined first. Then prepares the design matrix where the lagged values
+reside on the left and the side information, if any, on the right. Lastly, carries out the X and y scalings and
+transformations, if any, and fits <cite>repeats</cite> number of base models on them.</p>
+<p>Sets two public post-attributes: <cite>fitted_values_all_</cite> and <cite>fitted_values_</cite>, which are the in-sample predictions
+(the fitted values) of all the networks and the mean of all the networks, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">pd.Series or np.ndarray</span></dt><dd><p>The endogenous variable, i.e., the target time series</p>
+</dd>
+<dt><strong>X</strong><span class="classifier">pd.DataFrame or np.ndarray, optional</span></dt><dd><p>The exogenous variables, i.e., the side information matrix</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt>self</dt><dd><p>The fitted instance</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The primary way of calling this function is <cite>fit(y, X?)</cite> where ? signals optionality.  However, to comply with
+the sklearn’s “normal” estimators’ way of passing X first y next, the function also accepts <cite>fit(X, y)</cite> and
+arranges internally which are which.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="arnet.ARNet.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alphas</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">95</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bootstrap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arnet.ARNet.predict" title="Link to this definition">¶</a></dt>
+<dd><p>Perform multi-step recursive forecasting and optionally also calculate prediction intervals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">pd.DataFrame or np.ndarray</span></dt><dd><p>The side information to use for prediction horizon. If the training data had no <cite>X</cite>, it’s an error to pass
+one here. Conversely, if training data did have <cite>X</cite>, it’s an error to not pass one here.</p>
+</dd>
+<dt><strong>n_steps</strong><span class="classifier">int</span></dt><dd><p>Number of steps to forecast ahead. If <cite>X</cite> is supplied, it can be inferred from <cite>X.shape[0]</cite>. It is an error
+to pass inconsistent <cite>X</cite> and <cite>n_steps</cite>, i.e., <cite>n_steps</cite> must be equal to <cite>X.shape[0]</cite> when both are passed.</p>
+</dd>
+<dt><strong>return_intervals</strong><span class="classifier">bool, default=False</span></dt><dd><p>Whether to also calculate and return the prediction intervals. The procedure in
+<a class="reference external" href="https://otexts.com/fpp3/nnetar.html#prediction-intervals-5">https://otexts.com/fpp3/nnetar.html#prediction-intervals-5</a> is followed. If there is a single alpha provided
+in <cite>alphas</cite>, then a single-index column pd.DataFrame is returned with column labels “lower” and “upper”. If
+there is more than one alpha, a multi-index column frame is returned, e.g., with levels [80, 95] outside and
+[“lower”, “upper”] inside. The parameters below are ignored if <cite>return_intervals</cite> is False.</p>
+</dd>
+<dt><strong>n_paths</strong><span class="classifier">int, default=1_000</span></dt><dd><p>Number of paths to generate from the model for the forecast horizon for the prediction intervals.  Ignored
+if <cite>return_intervals</cite> is False.</p>
+</dd>
+<dt><strong>alphas</strong><span class="classifier">int, list-like of int, default=95</span></dt><dd><p>Percentage values in (0, 100) for the prediction intervals’ quantile calculation. Ignored if
+<cite>return_intervals</cite> is False.</p>
+</dd>
+<dt><strong>bootstrap</strong><span class="classifier">bool, default=False</span></dt><dd><p>If True, the noises are sampled from the in-sample errors; otherwise, from a normal distribution following
+the mean &amp; std of the in-sample errors. Ignored if <cite>return_intervals</cite> is False.</p>
+</dd>
+<dt><strong>return_paths</strong><span class="classifier">bool, default=False</span></dt><dd><p>Whether also return the simulated <cite>n_paths</cite> paths into the future. Ignored if <cite>return_intervals</cite> is False.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fores</strong><span class="classifier">pd.Series or np.ndarray</span></dt><dd><p>Forecasts into the future. If the training <cite>y</cite> was a pandas Series, this is a pandas Series with an
+(hopefully) appropriate index; otherwise, it’s a NumPy array.</p>
+</dd>
+<dt><strong>intervals</strong><span class="classifier">pd.DataFrame, optional</span></dt><dd><p>Prediction intervals as either a single-index column frame with labels “lower” and “upper” if one alpha,
+where the <cite>.name</cite> of the columns is {alpha}%; or a multi-index one if many alphas, where the levels are the
+alphas outside and “lower”, “upper” inside. If the training <cite>y</cite> was a pandas Series, the index of the frame
+is a continuation of that one (if possible); otherwise it has the default RangeIndex.  Only provided if
+<cite>return_intervals</cite> is True.</p>
+</dd>
+<dt><strong>paths</strong><span class="classifier">pd.DataFrame, optional</span></dt><dd><p>Generated future paths of shape <cite>n_steps</cite> x <cite>n_paths</cite>. Only provided if <cite>return_intervals</cite> is True.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If the in-sample predictions are wanted, i.e., the fitted values during training, it can be obtained via the
+post-fit attributes <cite>.fitted_values_</cite> and <cite>fitted_values_all_</cite>, where the latter collects all of the internal
+<cite>repeats</cite> number of networks’ fitted values and the former is the mean of them.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="arnet.ARNet.validate">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">validate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">X=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_model_cls=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iter=-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">metric=<function</span> <span class="pre">mean_squared_error></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cv=5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refit=True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arnet.ARNet.validate" title="Link to this definition">¶</a></dt>
+<dd><p>Perform time series cross validation with randomized (or full) grid search.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>y</strong><span class="classifier">pd.Series or np.ndarray</span></dt><dd><p>The training target series to perform the validation over.</p>
+</dd>
+<dt><strong>param_grid</strong><span class="classifier">dict or a list of dicts</span></dt><dd><p>Parameter combinations to try as either a dictionary, e.g., <cite>{“p”: [1, 2, 3], “estimator__solver”: [“adam”,
+“sgd”]}</cite> or a list of dictionaries, e.g., <cite>[{“p”: 1, “estimator__solver”: “adam”}, {…}]</cite>. Note that the
+base model’s parameters are passed with an “estimator__” prefix.</p>
+</dd>
+<dt><strong>X</strong><span class="classifier">pd.DataFrame, np.ndarray or None, optional</span></dt><dd><p>The accompanying exogenous variables for validation, if any.</p>
+</dd>
+<dt><strong>base_model_cls</strong><span class="classifier">Estimator class, optional</span></dt><dd><p>Uninstantiated model class, e.g., <cite>MLPRegressor</cite>. Defaults to a single-layer MLP where the number of hidden
+neurons are chosen automatically, i.e., the default base model when <cite>ARNet()</cite> is called.</p>
+</dd>
+<dt><strong>n_iter</strong><span class="classifier">int or None, default=-1</span></dt><dd><p>Either a positive integer to indicate the number of samples to randomly draw from <cite>param_grid</cite>, or one of
+<cite>{-1, None}</cite> to imply a full grid search.</p>
+</dd>
+<dt><strong>metric</strong><span class="classifier">callable, default=sklearn.metrics.mean_squared_error</span></dt><dd><p>The validation metric to determine the fold scores. It should adapt “lesser is better”.</p>
+</dd>
+<dt><strong>cv</strong><span class="classifier">int or sklearn.model_selection.TimeSeriesSplit, default=5</span></dt><dd><p>Determines how the folds are constructed. If an integer, <cite>TimeSeriesSplit(n_splits=cv)</cite> is constructed. For
+a finer control, e.g., the test folds’ sizes, one can pass a custom TimeSeriesSplit here.</p>
+</dd>
+<dt><strong>refit</strong><span class="classifier">bool, default=True</span></dt><dd><p>Whether to make available a “best” model out of the parameter combinations that performed the best.  The
+model will be trained over the entire <cite>y</cite> (and <cite>X</cite> if available), and will be returned with the key
+“best_estimator_”.</p>
+</dd>
+<dt><strong>random_state</strong><span class="classifier">int or None, optional</span></dt><dd><p>The seed used for sampling configurations from <cite>param_grid</cite> if randomized search is opted for with a
+nonnegative <cite>n_iter</cite>. Seeds the stdlib’s <cite>random</cite>. By default, no reproducibility is aimed.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>search_results</strong><span class="classifier">dict</span></dt><dd><dl class="simple">
+<dt>A dictionary with the keys</dt><dd><ul class="simple">
+<li><p><cite>scores_</cite>: a dictionary of parameter-config (tuple) -> fold scores;</p></li>
+<li><p><cite>best_params_</cite>: a dictionary of parameter (str) -> value, which performed the best (“validated”
+parameters);</p></li>
+<li><p><cite>best_estimator_</cite>: an ARNet model that has <cite>best_params_</cite> and trained over the entire <cite>y</cite> (and <cite>X</cite>). Only
+provided if <cite>refit</cite> is True.</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="arnet.ARNet.plot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lines</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_indexes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intervals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">paths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">figure</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arnet.ARNet.plot" title="Link to this definition">¶</a></dt>
+<dd><p>Plot <cite>lines</cite> with either a plotly or a matplotlib backend. Might be useful for plotting true values with
+predictions as well as the prediction intervals and simulated paths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>lines</strong><span class="classifier">list-like of list-likes</span></dt><dd><p>List of series to plot.</p>
+</dd>
+<dt><strong>labels</strong><span class="classifier">list-like of str, optional</span></dt><dd><p>Corresponding labels (names) of the lines to appear on the legend.</p>
+</dd>
+<dt><strong>true_indexes</strong><span class="classifier">int or list-like of ints or None, default=0</span></dt><dd><p>Indexes of the “true” values in the list <cite>lines</cite>, i.e., the location(s) of the target series. Used for
+marking the non-true series with dashes to distinguish them better from true values. Can pass <cite>None</cite> to make
+all lines appear sans dashes. Default is to assume 0th element of <cite>lines</cite> has a true series.</p>
+</dd>
+<dt><strong>intervals</strong><span class="classifier">pd.DataFrame, optional</span></dt><dd><p>The prediction intervals obtained through <cite>.predict(…, return_intervals=True)</cite>. If supplied, the intervals
+with the corresponding confidence levels are plotted as shaded areas with differing transparency.</p>
+</dd>
+<dt><strong>paths</strong><span class="classifier">pd.DataFrame, optional</span></dt><dd><p>The simulated paths obtained through <cite>.predict(…, return_paths=True)</cite>. If supplied, the generated future
+paths are plotted out. Expected to be of shape <cite>(n_steps, n_paths)</cite>.</p>
+</dd>
+<dt><strong>figure_kwargs</strong><span class="classifier">dict, optional</span></dt><dd><p>Configuration options for the figure displayed. If using plotly, passed to <cite>fig.update_layout</cite>; if
+matplotlib, passed to <cite>plt.setp</cite>.</p>
+</dd>
+<dt><strong>figure</strong><span class="classifier">plotly.graph_objects.Figure or matplotlib.pyplot.figure, optional</span></dt><dd><p>Pre-prepared figure to perform the plotting on.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>fig</strong><span class="classifier">plotly.graph_objects.Figure or matplotlib.pyplot.figure, optional</span></dt><dd><p>The figure plotting happened on.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function needs either plotly or matplotlib to be installed, and the libraries are tried in that
+order. If none of them is available, a RuntimeError is raised.</p>
+</dd></dl>
+</dd></dl>
+<div class="clearer"></div>
+</div>
+</div>
+</div>
+<div aria-label="main navigation" class="sphinxsidebar" role="navigation">
+<div class="sphinxsidebarwrapper">
+<div>
+<h3><a href="index.html">Table of Contents</a></h3>
+<ul>
+<li><a class="reference internal" href="#"><code class="docutils literal notranslate"><span class="pre">ARNet</span></code></a><ul>
+<li><a class="reference internal" href="#arnet.ARNet.fit"><code class="docutils literal notranslate"><span class="pre">ARNet.fit()</span></code></a></li>
+<li><a class="reference internal" href="#arnet.ARNet.predict"><code class="docutils literal notranslate"><span class="pre">ARNet.predict()</span></code></a></li>
+<li><a class="reference internal" href="#arnet.ARNet.validate"><code class="docutils literal notranslate"><span class="pre">ARNet.validate()</span></code></a></li>
+<li><a class="reference internal" href="#arnet.ARNet.plot"><code class="docutils literal notranslate"><span class="pre">ARNet.plot()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="sidebarbutton" title="Collapse sidebar">
+<span>«</span>
+</div>
+</div>
+<div class="clearer"></div>
+</div>
+
+<div class="footer" role="contentinfo">Made using Sphinx 7.3.7.
+    </div>
+</body>
+</html>

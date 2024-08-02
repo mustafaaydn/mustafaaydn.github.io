@@ -1,0 +1,308 @@
+..
+   TODO: cross references
+
+.. toctree::
+   :maxdepth: 0
+   :hidden:
+
+
+arnet: Nonlinear autoregression with feed-forward neural networks (or any estimator really)
+-------------------------------------------------------------------------------------------
+.. contents:: Contents
+   :depth: 1
+   :local:
+   :backlinks: none
+
+Inspired by `nnetar.R <https://www.rdocumentation.org/packages/forecast/versions/8.23.0/topics/nnetar>`_, *arnet*
+implements a nonlinear autoregression framework with feed-forward neural networks in Python. It's actually a bit more
+generalized: it supports any sklearn-compliant estimator in lieue of FFNNs, e.g., `Random Forests
+<https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html>`_ or the vanilla `Linear
+Regressor <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html>`_. In essence,
+using past lags of the target series *y*, along with the optional side information variables *X*, it performs
+(recursive) multi-step time series forecasting. If left unspecified, the number of ordinal lags *p* (and seasonal lags
+*P* if there is seasonality) to look into past as well as the number of hidden neurons of the FFNN (if that's the base
+regressor which is the default) is chosen automatically, following nnetar.R.
+
+The :doc:`API <arnet>` has four methods: :meth:`~.arnet.ARNet.fit` (training), :meth:`~.arnet.ARNet.predict`
+(forecasting), :meth:`~.arnet.ARNet.validate` (time-series validation) and :meth:`~.arnet.ARNet.plot` (visualizing the
+lines). Note that `plot` first tries `plotly <https://plotly.com/python/>`_ and then `matplotlib
+<https://matplotlib.org/>`_ for the plotting backend; if neither is found, it errors out.
+
+Here are some example runs illustrating the flow:
+
+Fit, predict, plot
+==================
+.. code-block:: python
+
+    import pandas as pd
+    from arnet import ARNet
+
+    # Read data
+    y = pd.read_csv("raw...", index_col="Year").squeeze()  # yearly sunspots
+
+    # Fit-predict
+    model = ARNet()
+    model.fit(y)
+    forecasts = model.predict(n_steps=20)
+
+    # Plot
+    ARNet.plot(lines=[y, model.fitted_values_, forecasts],
+               labels=["y-train", "in-sample preds", "out-sample preds"],
+               figure_kwargs={"xaxis_title": "Year", "yaxis_title": "# of spots",
+                              "title": "Forecasting dark spots on the Sun"})
+
+which produces
+
+.. raw:: html
+    :file: figures/sunspots_forecasts.html
+
+where we obtain the in-sample predictions via the post-fit attribute `fitted_values_`; it has no value for first couple
+of samples as seen on the figure -- that's because of the lags used in the design matrix chops off those values. Before
+moving on, let's look at the repr of the model:
+
+>>> model
+ARNet(base_model=MLPRegressor(hidden_layer_sizes=5, max_iter=2000), p=9)
+
+It shows that the base model used is a single-layer MLP with 5 neurons and it had the number of epochs as 2,000. Moreover, the number of past lags to look at, `p`, was chosen as 9, i.e., :math:`y_{t-9}, \ldots, y_{t-1}` are
+utilized to predict :math:`y_t`. Lastly, we note that *ARNet* actually fits `model.repeats` amount of base models, which
+by default is 20, and then averages individual models' predictions when forecasting. This is to smooth out the possible
+randomness included in the base model's training, e.g., stochastic learning or random starting weights for a neural
+network.
+
+Prediction intervals
+====================
+Now let's see the prediction intervals -- where does the network think the future values will lie around with the given
+probabilities?
+
+.. code-block:: python
+
+    # Ask for intervals when predicting
+    forecasts, intervals = model.predict(n_steps=20, return_intervals=True, alphas=[80, 95])
+
+    # Pass the intervals to `plot` to see them as well
+    ARNet.plot(lines=[y, model.fitted_values_, forecasts],
+               labels=["y-train", "in-sample preds", "out-sample preds"],
+               intervals=intervals,
+               figure_kwargs={"xaxis_title": "Year", "yaxis_title": "# of spots",
+                              "title": "Forecasts with prediction intervals on sunspots"})
+
+which yields
+
+.. raw:: html
+    :file: figures/sunspots_intervals.html
+
+Hmm, we get some rough picture about the future. But we observe that the lower parts of the intervals sometimes go below
+0 despite the number of sunspots being a nonnegative quantity. Of course, the model has no knowledge about this, so it's
+not forced to produce nonnegative forecasts (though, the mean forecasts are pleasingly all positive). One way to force
+this is to predict a *transformed* series, e.g., square root or the logarithm of *y*. Then, whatever the network
+predicts, undoing the transformation (squaring and exponentating, resp.) will make sure the ultimate forecasts are
+nonnegative.
+
+..
+   By default, *arnet* performs no transformation. However, by passing `transform_output=True`, a `Box-Cox <https://en.wikipedia.org/wiki/Power_transform#Box%E2%80%93Cox_transformation>`_ transformation with an automatically selected λ is activated. This transformation is a "generalized" log-transform; in fact, if λ = 0, it's exactly that. This not only helps stabilize the variance of the series but also ensures nonnegative forecasts:
+
+Working with a transformed *y*
+==============================
+Let's perform a square-root transformation:
+
+.. code-block:: python
+
+    import numpy as np
+    from sklearn.preprocessing import FunctionTransformer
+
+    # Prepare a y-transformer and pass on
+    sqrt_transformer = FunctionTransformer(np.sqrt, inverse_func=np.square)
+    model = ARNet(transform_output=sqrt_transformer)
+
+    # Fit, predict, plot
+    model.fit(y)
+    forecasts, intervals = model.predict(n_steps=20, return_intervals=True, alphas=[80, 95])
+    ARNet.plot(lines=[y, model.fitted_values_, forecasts],
+                   labels=["y-train", "in-sample preds", "out-sample preds"],
+                   intervals=intervals,
+                   figure_kwargs={"xaxis_title": "Year", "yaxis_title": "# of spots",
+                                  "title": "Forecasts & intervals over sqrt(y)"})
+
+which gives
+
+.. raw:: html
+    :file: figures/sunspots_intervals_sqrt.html
+
+As expected, the intervals do not go below 0.
+
+Validation
+==========
+Let's do some expanding time-series validation to possibly discover a better model than the default configuration:
+
+.. code-block:: python
+
+    from sklearn.model_selection import TimeSeriesSplit
+
+    # Prepare a grid of hyperparameters
+    param_grid = {"p": [1, 3, None], "transform_output": [False, sqrt_transformer],
+                  "estimator__hidden_layer_sizes": [8, (16, 8), 32, None],
+                  "estimator__learning_rate_init": [3e-2, 3e-3, 3e-4]}
+
+    # And a custom splitter reflecting the actual test size
+    cv_splitter = TimeSeriesSplit(test_size=20)
+
+    # Now validate over the training data
+    search = ARNet.validate(y, param_grid, cv=cv_splitter)
+
+where we pass `None` to `p` and `estimator__hidden_layer_sizes` to imply that they should be chosen automatically. We
+observe that the base model specific parameters has the prefix "estimator\__". Note that we pass a custom
+`TimeSeriesSplit`\ter to determine the validation splits. By default, `validate` uses `TimeSeriesSplit()` which does
+5-fold time series expanding validation with `test_size` being `n_samples // (n_splits + 1)`. However, we often want our
+validation sizes to match the size of the test set but `validate` doesn't know about that, so we pre-make a splitter and
+pass that.
+
+The resultant `search` object is a dictionary that has the validation scores, best performing parameter combination as
+well as the re-fit model with those parameters over the entire training data (if `refit=True`, which it is by default):
+
+>>> search.keys()
+dict_keys(['scores_', 'best_params_', 'best_estimator_'])
+
+>>> search["best_params_"]
+{'estimator__hidden_layer_sizes': (16, 8),
+ 'estimator__learning_rate_init': 0.0003,
+ 'p': None,
+ 'transform_output': False}
+
+It looks like the automatic `p` was good. Note that by default, `validate` performs a full grid search with 5-fold time
+series expanding validation with `TimeSeriesSplit
+<https://scikit-learn.org/stable/modules/cross_validation.html#time-series-split>`_ and the metric to choose the best
+one is mean squared error. These can all be customized, e.g., passing `n_iter=30` would perform a randomized grid search
+of 30 configurations. Please see :meth:`~.arnet.ARNet.validate` in the API reference for the details of this method.
+
+Different base models
+=====================
+Now, let us use a different base model than an MLP to perform forecasting -- a RandomForestRegressor. This model is a
+tree-based ensemble model based on the idea of "bagging" (bootstrap aggregation). It trains many small decision trees on
+a random subsets of the data (in both dimensions -- samples and features) and averages them out to abate the variance
+contained within the individual decision trees.
+
+.. code-block:: python
+
+    from sklearn.ensemble import RandomForestRegressor
+
+    model = ARNet(base_model=RandomForestRegressor())
+    model.fit(y)
+    forecasts = model.predict(n_steps=20)
+
+    ARNet.plot(lines=[y, model.fitted_values_, forecasts],
+               labels=["y-train", "in-sample preds", "out-sample preds"],
+               figure_kwargs={"title": "Random Forest's forecasts on sunspots"})
+
+which gives
+
+.. raw:: html
+    :file: figures/sunspots_random_forest.html
+
+It seems like the default RandomForest overfit to the training data but the forecasts are still not bad. We can perform
+a validation for this regressor as well with the same interface:
+
+.. code-block:: python
+
+    # Prepare a grid of hyperparameters
+    param_grid_rf = {"p": [2, 4, None], "transform_output": [False, sqrt_transformer],
+                     "estimator__max_features": [0.6, 0.8, 1],
+                     "estimator__n_estimators": [50, 100]}
+
+    # And a custom splitter reflecting the actual test size
+    cv_splitter = TimeSeriesSplit(test_size=20)
+
+    # Pass on to `validate` along with the time series
+    search_rf = ARNet.validate(y, param_grid_rf, cv=cv_splitter,
+                               base_model_cls=RandomForestRegressor)
+
+where we made it known to the validator that the base model class is `RandomForestRegressor`, so it will initiate the
+models accordingly with the given set of parameters. The above yields
+
+>>> search_rf.keys()
+dict_keys(['scores_', 'best_params_', 'best_estimator_'])
+
+>>> search_rf["best_params_"]
+{'estimator__max_features': 0.6,
+ 'estimator__n_estimators': 50,
+ 'p': None,
+ 'transform_output': False}
+
+Again the automatic `p` seems fine. Now we have a somewhat validated random forest model that hopefully does better than
+the default one, which seemed to overfit a bit. We'll evaluate the performances at the end but before that...
+
+Linear AR(p) as a subset
+========================
+...Given we can use any other sklearn-compatible estimator, what if we use `LinearRegression
+<https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html>`_? We expect to have an
+*AR(p)* model for free! In fact, we have *S-AR-X(p, P)* as there is also a support for seasonality and exogenous
+regressors. Let's back up this claim with our data:
+
+.. code-block:: python
+
+    from sklearn.linear_model import LinearRegression
+    from statsmodels.tsa.ar_model import AutoReg
+
+    linreg_model = ARNet(LinearRegression(), repeats=1)
+    linreg_forecasts = linreg_model.fit(y).predict(n_steps=20)
+
+    ar_model = AutoReg(y, lags=linreg_model.p)
+    ar_forecasts = ar_model.fit().forecast(steps=20)
+
+    if np.allclose(linreg_forecasts, ar_forecasts):
+        print("We have ourselves an AR(p) predictor!")
+
+which indeed prints *We have ourselves an AR(p) predictor!*. Note that we passed `repeats=1` to avoid redundant work as
+LinearRegression has no randomized part, so it would have fit identical models *N* times for no good reason. Overall,
+having the option to also try a linear AR model is helpful to have as a baseline for forecasts.
+
+Evaluating the forecasters so far
+=================================
+In closing, why not evaluate the forecasts produced so far? The sunspots data we got in training encompassed the years
+1700-1988 and we have been predicting the years 1989-2008. It turns out the data for the forecasting horizon is
+available, and we can see how the models have been doing:
+
+.. code-block:: python
+
+    from sklearn.metrics import mean_squared_error as mse
+    from statsmodels.datasets import sunspots
+
+    future_sunspots = sunspots.load_pandas().endog.iloc[-20:]
+
+    results = {}
+    base_models = [None, RandomForestRegressor(), LinearRegression(), search["best_estimator_"], search_rf["best_estimator_"]]
+    names = ["Default MLP", "Random Forest", "Linear Regression", "Validated MLP", "Validated RF"]
+    print("RMSEs:")
+    for name, base_model in zip(names, base_models):
+        # The "best_estimator_"s are already ARNets, so check for that
+        model = base_model if isinstance(base_model, ARNet) else ARNet(base_model)
+        # Fit & predict
+        forecasts = model.fit(y).predict(n_steps=future_sunspots.size)
+        results[name] = forecasts
+        # Score
+        print(f"{name}: {mse(forecasts, future_sunspots, squared=False):.2f}")
+
+    ARNet.plot([future_sunspots, *results.values()],
+               ["future-y", *[f"{name} forecasts" for name in results]],
+               figure_kwargs={"title": "Various predictions of sunspots"})
+
+which yields
+
+.. code-block:: python
+
+    RMSEs:
+    Default MLP: 13.34
+    Random Forest: 43.28
+    Linear Regression: 15.24
+    Validated MLP: 12.95
+    Validated RF: 17.86
+
+.. raw:: html
+    :file: figures/sunspots_different_models.html
+
+We see that the validated RF model has indeed significantly overcome the overfitting issues to produce more pleasant
+forecasts. The linear *AR(p)* model is useful to have as a baseline -- the MLP-powered autoregressors manage to build on
+top of that in terms of performance, which implies there were certainly some nonlinearities to be discovered in the
+training data and the default MLP based model as well as the validated one brings the RMSE on unseen data considerably
+lower.
+
+This concludes the examples, please see :doc:`here <arnet>` for the API reference of the exposed methods used so far. Happy forecasting!

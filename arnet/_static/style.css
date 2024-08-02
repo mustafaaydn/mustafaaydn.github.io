@@ -1,0 +1,30 @@
+div.body {
+    max-width: 85%;
+    margin-left: 5%;
+    margin-right: 5%;
+    /* margin-top: -5px; */
+}
+
+div.body-wrapper {
+    margin-top: 0 !important;
+}
+
+div.related {
+    display: flex;
+    justify-content: center;
+}
+
+#module-arnet {
+    margin: 0;
+}
+
+div.sphinxsidebar {
+    max-width: 50%
+}
+
+h1 {
+    font-size: 1.5em !important;
+}
+h2 {
+    font-size: 1.2em !important;
+}

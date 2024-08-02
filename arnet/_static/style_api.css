@@ -1,0 +1,39 @@
+div.body {
+    max-width: 90%;
+    /* margin-left: 5%; */
+    margin-right: 5%;
+    margin-top: -15px;
+}
+
+div.body-wrapper {
+    margin-top: 0 !important;
+}
+
+div.related {
+    display: flex;
+    justify-content: center;
+}
+
+#module-arnet {
+    margin: 0;
+}
+
+div.sphinxsidebar {
+    max-width: 50%
+}
+
+/* API's local table of contents' font-size */
+div.sphinxsidebar > div > div > ul > li > a {
+    font-size: 1.5em;
+}
+
+div.sphinxsidebar > div > div > ul > li > ul {
+    font-size: 1.32em;
+}
+
+h1 {
+    font-size: 1.5em !important;
+}
+h2 {
+    font-size: 1.2em !important;
+}
