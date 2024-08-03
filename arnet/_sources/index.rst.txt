@@ -60,7 +60,7 @@ which produces
     :file: figures/sunspots_forecasts.html
 
 where we obtain the in-sample predictions via the post-fit attribute `fitted_values_`; it has no value for first couple
-of samples as seen on the figure -- that's because of the lags used in the design matrix chops off those values. Before
+of samples as seen on the figure -- that's because the lags used in the design matrix chops off those values. Before
 moving on, let's look at the repr of the model:
 
 >>> model
